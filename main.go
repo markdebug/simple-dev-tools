@@ -9,9 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// @title Port Management API
+// @title Simple dev tools
 // @version 1.0
-// @description Windows 主机端口管理 API
 // @host localhost:8080
 // @BasePath /
 func main() {
@@ -180,3 +179,4 @@ func main() {
 	// swagger 路由
 	r.Run(":8080")
 }
+
