@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>JSON & 时间戳工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .module {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            width: 45%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .module h2 {
+            margin-top: 0;
+        }
+        textarea, input[type="text"] {
+            width: 100%;
+            margin: 10px 0;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 8px 16px;
+            margin-top: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            background: #f9f9f9;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        /* 自定义弹窗样式 */
+        .custom-alert {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            text-align: center;
+            width: 300px;
+        }
+        .custom-alert h3 {
+            margin: 0 0 10px;
+            font-size: 18px;
+        }
+        .custom-alert button {
+            padding: 8px 16px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .custom-alert button:hover {
+            background-color: #0056b3;
+        }
+        .custom-alert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <!-- JSON 相关功能模块 -->
+    <div class="module">
+        <h2>JSON 工具</h2>
+        <textarea id="jsonInput" placeholder="请输入 JSON"></textarea>
+        <button id="formatJsonBtn">格式化 JSON</button>
+        <button id="compressJsonBtn">压缩 JSON</button>
+        <div id="jsonResult" class="result"></div>
+    </div>
+
+    <!-- 时间戳相关功能模块 -->
+    <div class="module">
+        <h2>时间戳工具</h2>
+        <div>
+            <h3>时间戳转时间</h3>
+            <input type="text" id="timestampInput" placeholder="请输入时间戳（秒）">
+            <select id="timezoneSelect">
+                <option value="Local">本地时区</option>
+                <option value="UTC">UTC</option>
+                <option value="Asia/Shanghai">Asia/Shanghai</option>
+                <option value="America/New_York">America/New_York</option>
+                <option value="Europe/London">Europe/London</option>
+            </select>
+            <button id="convertTimestampBtn">转换为时间</button>
+            <div id="timestampResult" class="result"></div>
+        </div>
+        <div>
+            <h3>获取当前时间戳</h3>
+            <button id="getCurrentTimestampBtn">获取当前时间戳</button>
+            <div id="currentTimestampResult" class="result"></div>
+        </div>
+        <div>
+            <h3>时间转时间戳</h3>
+            <input type="text" id="timeInput" placeholder="请输入时间（YYYY-MM-DD HH:MM:SS）">
+            <select id="timezoneSelectForTimestamp">
+                <option value="Local">本地时区</option>
+                <option value="UTC">UTC</option>
+                <option value="Asia/Shanghai">Asia/Shanghai</option>
+                <option value="America/New_York">America/New_York</option>
+                <option value="Europe/London">Europe/London</option>
+            </select>
+            <button id="timeToTimestampBtn">转换为时间戳</button>
+            <div id="timeToTimestampResult" class="result"></div>
+        </div>
+        <div>
+            <h3>计算时间差</h3>
+            <input type="text" id="startTimeInput" placeholder="开始时间（YYYY-MM-DD HH:MM:SS）">
+            <input type="text" id="endTimeInput" placeholder="结束时间（YYYY-MM-DD HH:MM:SS）">
+            <button id="calculateTimeDiffBtn">计算时间差</button>
+            <div id="timeDiffResult" class="result"></div>
+        </div>
+    </div>
+
+    <!-- 文本比较功能模块 -->
+    <div class="module">
+        <h2>文本比较工具</h2>
+        <textarea id="textInput1" placeholder="请输入第一个文本"></textarea>
+        <textarea id="textInput2" placeholder="请输入第二个文本"></textarea>
+        <button id="compareTextBtn">比较文本</button>
+        <div id="textCompareResult" class="result"></div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            // 自定义弹窗函数
+            function showAlert(message) {
+                const overlay = $('<div class="custom-alert-overlay"></div>');
+                const alertBox = $(`
+                    <div class="custom-alert">
+                        <h3>${message}</h3>
+                        <button>确定</button>
+                    </div>
+                `);
+                $('body').append(overlay).append(alertBox);
+
+                // 点击按钮关闭弹窗
+                alertBox.find('button').click(function () {
+                    overlay.remove();
+                    alertBox.remove();
+                });
+            }
+
+            // 格式化 JSON
+            $('#formatJsonBtn').click(function () {
+                const input = $('#jsonInput').val().trim();
+                if (!input) {
+                    showAlert("请输入有效的 JSON 数据！");
+                    return;
+                }
+                $.post('/api/format-json', JSON.stringify({ input }), function (data) {
+                    $('#jsonResult').text(data.result || data.error);
+                }, 'json');
+            });
+
+            // 压缩 JSON
+            $('#compressJsonBtn').click(function () {
+                const input = $('#jsonInput').val().trim();
+                if (!input) {
+                    showAlert("请输入有效的 JSON 数据！");
+                    return;
+                }
+                $.post('/api/compress-json', JSON.stringify({ input }), function (data) {
+                    $('#jsonResult').text(data.result || data.error);
+                }, 'json');
+            });
+
+            // 时间戳转时间（支持时区）
+            $('#convertTimestampBtn').click(function () {
+                const timestamp = $('#timestampInput').val().trim();
+                const timezone = $('#timezoneSelect').val();
+                if (!timestamp) {
+                    showAlert("请输入有效的时间戳！");
+                    return;
+                }
+                $.post('/api/convert-timestamp', JSON.stringify({ timestamp, timezone }), function (data) {
+                    $('#timestampResult').text(data.result || data.error);
+                }, 'json');
+            });
+
+            // 获取当前时间戳
+            $('#getCurrentTimestampBtn').click(function () {
+                $.get('/api/current-timestamp', function (data) {
+                    $('#currentTimestampResult').text(`当前时间戳: ${data.result}`);
+                }, 'json');
+            });
+
+            // 时间转时间戳（支持时区）
+            $('#timeToTimestampBtn').click(function () {
+                const datetime = $('#timeInput').val().trim();
+                const timezone = $('#timezoneSelectForTimestamp').val();
+                if (!datetime) {
+                    showAlert("请输入有效的时间（格式：YYYY-MM-DD HH:MM:SS）！");
+                    return;
+                }
+                $.post('/api/time-to-timestamp', JSON.stringify({ datetime, timezone }), function (data) {
+                    $('#timeToTimestampResult').text(data.result || data.error);
+                }, 'json');
+            });
+
+            // 计算时间差
+            $('#calculateTimeDiffBtn').click(function () {
+                const startTime = $('#startTimeInput').val().trim();
+                const endTime = $('#endTimeInput').val().trim();
+                if (!startTime || !endTime) {
+                    showAlert("请输入有效的开始时间和结束时间（格式：YYYY-MM-DD HH:MM:SS）！");
+                    return;
+                }
+                $.post('/api/time-diff', JSON.stringify({ start_time: startTime, end_time: endTime }), function (data) {
+                    if (data.result) {
+                        const result = data.result;
+                        $('#timeDiffResult').text(
+                            `相差: ${result.years}年 ${result.months}个月 ${result.days}天\n总计: ${result.total_days}天`
+                        );
+                    } else {
+                        $('#timeDiffResult').text(data.error);
+                    }
+                }, 'json');
+            });
+
+            // 文本比较功能
+            $('#compareTextBtn').click(function () {
+                const text1 = $('#textInput1').val().trim();
+                const text2 = $('#textInput2').val().trim();
+                if (!text1 || !text2) {
+                    showAlert("请输入两个有效的文本进行比较！");
+                    return;
+                }
+                if (text1 === text2) {
+                    $('#textCompareResult').text("两个文本一致！");
+                } else {
+                    $('#textCompareResult').text("两个文本不一致！");
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
