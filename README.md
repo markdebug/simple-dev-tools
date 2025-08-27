@@ -38,7 +38,7 @@
 ## 项目结构
 
 ```
-tp-k8s/
+simple-dev-tools/
 ├── main.go                # 后端主程序，基于 Gin 框架
 ├── static/
 │   ├── index.html         # 前端页面，包含所有功能模块
@@ -57,7 +57,7 @@ tp-k8s/
 ### 启动项目
 1. 克隆项目到本地：
    ```bash
-   git clone https://github.com/your-repo/tp-k8s.git
+   git clone https://github.com/markdebug/simple-dev-tools.git
    cd tp-k8s
    ```
 2. 启动后端服务：
@@ -68,18 +68,6 @@ tp-k8s/
 
 ---
 
-## 前端功能截图
-
-### JSON 工具
-![JSON 工具](https://via.placeholder.com/800x400?text=JSON+工具)
-
-### 时间戳工具
-![时间戳工具](https://via.placeholder.com/800x400?text=时间戳工具)
-
-### 文本比较工具
-![文本比较工具](https://via.placeholder.com/800x400?text=文本比较工具)
-
----
 
 ## 贡献指南
 
@@ -90,3 +78,4 @@ tp-k8s/
 ## 许可证
 
 本项目采用 [MIT License](LICENSE) 开源。
+
